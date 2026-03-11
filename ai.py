@@ -3,7 +3,7 @@ import requests
 def ask_ai(prompt):
 
     response = requests.post(
-        "http://localhost:11434/api/generate",
+        " https://lily-totemic-irmgard.ngrok-free.dev/api/generate",
         json={
             "model": "llama3",
             "prompt": prompt,
