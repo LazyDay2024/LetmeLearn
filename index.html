@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LetMeLearn</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>LetMeLearn</h1>
+    <div class="subtitle">อัปโหลดเนื้อหา แล้วให้ระบบสรุปก่อนค่อยเลือกจำนวนข้อ quiz</div>
+
+    <form id="uploadForm">
+      <div class="field">
+        <label for="data_type">เลือกประเภทข้อมูล</label>
+        <select id="data_type" name="data_type">
+          <option value="text">Text</option>
+          <option value="image">Image</option>
+          <option value="pdf">PDF</option>
+        </select>
+      </div>
+
+      <div class="field" id="textBox">
+        <label for="text_content">ใส่ข้อความ</label>
+        <textarea id="text_content" name="text_content" placeholder="พิมพ์เนื้อหาที่ต้องการสรุป..."></textarea>
+      </div>
+
+      <div class="field" id="fileBox" style="display: none;">
+        <label for="file">อัปโหลดไฟล์</label>
+        <input type="file" id="file" name="file" />
+      </div>
+
+      <button class="submit-btn" id="submitBtn" type="submit">Upload & Summarize</button>
+    </form>
+
+    <div class="progress-wrapper" id="progressWrapper">
+      <div class="progress-header">
+        <span>Processing...</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="status-text" id="statusText">กำลังเริ่มประมวลผล...</div>
+    </div>
+  </div>
+
+  
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

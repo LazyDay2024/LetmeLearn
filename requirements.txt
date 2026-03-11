@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pillow
+pytesseract
+pypdf
+pdf2image
+requests
+pydantic
