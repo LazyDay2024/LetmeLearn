@@ -60,6 +60,16 @@ function renderQuiz(data) {
       <div class="answer-result" id="answerResult_${index}" style="display:none;"></div>
     `;
 
+    // Clear previous highlights when user selects another option
+    const radios = block.querySelectorAll('input[type="radio"]');
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        const labels = block.querySelectorAll('.choice-item');
+        labels.forEach(l => l.classList.remove('selected'));
+        radio.closest('.choice-item').classList.add('selected');
+      });
+    });
+
     quizContainer.appendChild(block);
   });
 }
@@ -71,17 +81,28 @@ function gradeQuiz() {
   questions.forEach((item, index) => {
     const selected = document.querySelector(`input[name="question_${index}"]:checked`);
     const resultBox = document.getElementById(`answerResult_${index}`);
+    const labels = document.querySelectorAll(`input[name="question_${index}"]`);
 
     if (!resultBox) return;
 
     resultBox.style.display = "block";
 
+    // Revert all choice-item colors
+    labels.forEach(radio => {
+      radio.closest('.choice-item').classList.remove('correct-choice', 'incorrect-choice');
+      if (radio.value === item.answer) {
+         radio.closest('.choice-item').classList.add('correct-choice-highlight');
+      }
+    });
+
     if (selected) {
       if (selected.value === item.answer) {
         score++;
+        selected.closest('.choice-item').classList.add('correct-choice');
         resultBox.className = "answer-result correct";
-        resultBox.textContent = `ถูกต้อง ✓ คำตอบคือ: ${item.answer}`;
+        resultBox.textContent = `ถูกต้อง ✓`;
       } else {
+        selected.closest('.choice-item').classList.add('incorrect-choice');
         resultBox.className = "answer-result incorrect";
         resultBox.textContent = `ผิด ✗ คำตอบที่ถูกคือ: ${item.answer}`;
       }
@@ -91,15 +112,51 @@ function gradeQuiz() {
     }
   });
 
-  scoreBox.style.display = "block";
-  scoreBox.textContent = `คะแนนของคุณ: ${score} / ${questions.length}`;
+  // scoreBox.style.display = "block";
+  // scoreBox.textContent = `คะแนนของคุณ: ${score} / ${questions.length}`;
 
+  showScoreModal(score, questions.length);
+}
+
+function showScoreModal(score, total) {
+  const modal = document.getElementById("scoreModalOverlay");
+  const scoreText = document.getElementById("modalScoreText");
+  const feedbackText = document.getElementById("modalFeedbackText");
+  
+  scoreText.textContent = `${score}/${total}`;
+  
+  const percentage = (score / total) * 100;
+  if (percentage === 100) {
+    feedbackText.textContent = "เก่งมาก! ถูกหมดเลย 🎉";
+  } else if (percentage >= 70) {
+    feedbackText.textContent = "ทำได้ดีมากครับ! 👍";
+  } else if (percentage >= 50) {
+    feedbackText.textContent = "ผ่านเกณฑ์! พยายามอีกนิดนะ ✌️";
+  } else {
+    feedbackText.textContent = "ไม่เป็นไรนะ ลองทบทวนเนื้อหาแล้วทำใหม่ดู! 💪";
+  }
+
+  modal.style.display = "flex";
   window.scrollTo({
     top: document.body.scrollHeight,
     behavior: "smooth"
   });
 }
 
+document.getElementById("tryAgainBtn")?.addEventListener("click", () => {
+  document.getElementById("scoreModalOverlay").style.display = "none";
+  // ล้างการสไตล์และ choice ที่เลือกไว้ทั้งหมด
+  renderQuiz(quizData);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.getElementById("newQuizBtn")?.addEventListener("click", () => {
+  window.location.href = "/result";
+});
+
+document.getElementById("retryBtn")?.addEventListener("click", () => {
+  window.location.href = "/result";
+});
 (function initQuizPage() {
   const rawQuizData = localStorage.getItem("quizData");
 
@@ -108,9 +165,8 @@ function gradeQuiz() {
   console.log(rawQuizData);
 
   if (!rawQuizData) {
-    quizContainer.innerHTML = `
-      <div class="summary-box">ไม่พบ quizData ในระบบ กรุณากลับไปสร้าง Quiz ใหม่</div>
-    `;
+    quizContainer.innerHTML = "";
+    document.getElementById("errorCard").style.display = "block";
     submitQuizBtn.style.display = "none";
     return;
   }
@@ -125,9 +181,8 @@ function gradeQuiz() {
   }
 
   if (!quizData) {
-    quizContainer.innerHTML = `
-      <div class="summary-box">ไม่สามารถอ่านข้อมูล Quiz ได้ อาจเป็นเพราะ AI ส่ง JSON ไม่ถูกต้อง</div>
-    `;
+    quizContainer.innerHTML = "";
+    document.getElementById("errorCard").style.display = "block";
     submitQuizBtn.style.display = "none";
     return;
   }

@@ -25,8 +25,7 @@ class QuizRequest(BaseModel):
 # =========================
 class WikiSearchRequest(BaseModel):
     key_search: list[str]
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\Ryu17\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
-print(pytesseract.get_tesseract_version())
+
 
 app = FastAPI()
 

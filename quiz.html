@@ -1,26 +1,55 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LetMeLearn - Quiz</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/theme.js"></script>
 </head>
+
 <body>
   <div class="container">
-    <h1>แบบทดสอบ</h1>
+    <button class="theme-toggle" id="themeToggleBtn">🌙</button>
+    <h1>📝 แบบทดสอบ</h1>
     <div class="subtitle">เลือกคำตอบให้ครบ แล้วกดส่งคำตอบ</div>
 
     <div id="quizContainer"></div>
 
     <div class="quiz-footer-actions">
-      <button class="quiz-btn" id="submitQuizBtn" type="button">ส่งคำตอบ</button>
-      <button class="close-btn" id="backToResultBtn" type="button">ย้อนกลับ</button>
+      <button class="quiz-btn" id="submitQuizBtn" type="button">✅ ส่งคำตอบ</button>
+      <button class="close-btn" id="backToResultBtn" type="button">⬅️ ย้อนกลับ</button>
     </div>
 
     <div id="scoreBox" class="score-box" style="display: none;"></div>
+
+    <!-- Error Card (Hidden by default) -->
+    <div id="errorCard" class="error-card" style="display: none;">
+      <h2 style="margin-top:0;">อ๊ะ! ระบบขัดข้องนิดหน่อย 🤖</h2>
+      <p>ดูเหมือนว่า AI จะส่งข้อมูลที่ระบบอ่านไม่ออก โปรดลองสร้างใหม่อีกครั้งนะครับ</p>
+      <button class="quiz-btn" id="retryBtn" type="button" style="margin-top: 10px;">🔄 ลองสร้างข้อสอบใหม่อีกครั้ง</button>
+    </div>
+
   </div>
 
-  <script src="/static/quiz.js"></script>
+  <!-- Fullscreen Score Modal Overlay -->
+  <div class="modal-overlay" id="scoreModalOverlay">
+    <div class="score-modal">
+      <h2>🎉 สรุปคะแนนของคุณ</h2>
+      <div class="score-circle">
+        <span id="modalScoreText">0/0</span>
+      </div>
+      <p id="modalFeedbackText" class="feedback-text">ทำได้ดีมาก!</p>
+      <div class="score-modal-actions">
+        <button class="quiz-btn" id="tryAgainBtn" type="button">🔄 ทำข้อสอบอีกครั้ง</button>
+        <button class="close-btn" id="newQuizBtn" type="button">✨ สร้าง Quiz ใหม่</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="static/quiz.js"></script>
 </body>
+
 </html>
