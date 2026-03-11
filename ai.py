@@ -4,6 +4,7 @@ import os
 def ask_ai(prompt):
     try:
         ai_base_url = os.getenv("AI_BASE_URL", "http://localhost:11434")
+        print("AI_BASE_URL DEBUG =", ai_base_url)
 
         response = requests.post(
             f"{ai_base_url}/api/generate",
