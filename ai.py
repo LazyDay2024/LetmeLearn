@@ -3,7 +3,8 @@ import os
 
 def ask_ai(prompt):
     try:
-        ai_base_url = os.getenv(" https://lily-totemic-irmgard.ngrok-free.dev", "http://localhost:11434")
+        ai_base_url = os.getenv("AI_BASE_URL", "http://localhost:11434")
+
         response = requests.post(
             f"{ai_base_url}/api/generate",
             headers={"ngrok-skip-browser-warning": "1"},
@@ -14,10 +15,14 @@ def ask_ai(prompt):
             },
             timeout=60
         )
+
         print("STATUS:", response.status_code)
         print("TEXT:", response.text[:500])
+
         response.raise_for_status()
+
         return response.json().get("response", "")
+
     except Exception as e:
         print("AI ERROR:", e)
         return f"AI error: {e}"
