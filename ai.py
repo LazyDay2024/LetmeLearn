@@ -1,9 +1,12 @@
 import requests
+import os
 
 def ask_ai(prompt):
     try:
+        ai_base_url = os.getenv(" https://lily-totemic-irmgard.ngrok-free.dev", "http://localhost:11434")
         response = requests.post(
-            " https://lily-totemic-irmgard.ngrok-free.dev/api/generate",
+            f"{ai_base_url}/api/generate",
+            headers={"ngrok-skip-browser-warning": "1"},
             json={
                 "model": "llama3",
                 "prompt": prompt,
@@ -11,15 +14,10 @@ def ask_ai(prompt):
             },
             timeout=60
         )
-
         print("STATUS:", response.status_code)
         print("TEXT:", response.text[:500])
-
         response.raise_for_status()
-
-        data = response.json()
-        return data.get("response", "ไม่พบ response จาก AI")
-
+        return response.json().get("response", "")
     except Exception as e:
         print("AI ERROR:", e)
         return f"AI error: {e}"
