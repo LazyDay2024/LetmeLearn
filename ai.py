@@ -8,7 +8,7 @@ def ask_ai(prompt):
 
         response = requests.post(
             f"{ai_base_url}/api/generate",
-            headers={"ngrok-skip-browser-warning": "1"},
+            headers={"ngrok-skip-browser-warning": "true"},
             json={
                 "model": "llama3",
                 "prompt": prompt,
