@@ -2,31 +2,19 @@ import requests
 import os
 
 def ask_ai(prompt):
-    try:
-        ai_base_url = os.getenv("AI_BASE_URL", "http://localhost:11434")
-        print("AI_BASE_URL DEBUG =", ai_base_url)
 
-        response = requests.post(
-            f"{ai_base_url}/api/generate",
-            headers={
-                "ngrok-skip-browser-warning": "true",
-                "User-Agent": "LetMeLearn-Server/1.0"
-                },
-            json={
-                "model": "llama3",
-                "prompt": prompt,
-                "stream": False
-            },
-            timeout=60
-        )
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY')}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "openai/gpt-oss-120b",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        }
+    )
 
-        print("STATUS:", response.status_code)
-        print("TEXT:", response.text[:500])
-
-        response.raise_for_status()
-
-        return response.json().get("response", "")
-
-    except Exception as e:
-        print("AI ERROR:", e)
-        return f"AI error: {e}"
+    return response.json()["choices"][0]["message"]["content"]
