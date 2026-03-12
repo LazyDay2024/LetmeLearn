@@ -6,3 +6,4 @@ def chunk_text(text, size=1500):
         chunks.append(text[i:i+size])
 
     return chunks
+#letmeFix: 12.36

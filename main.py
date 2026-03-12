@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import os
 import shutil
 import uuid
@@ -11,6 +11,7 @@ from ocr_service import extract_text_from_image_file
 from ai import ask_ai
 from pydantic import BaseModel
 from pypdf import PdfReader
+from services.text_summarizer import summarize_long_text
 
 
 class QuizRequest(BaseModel):
@@ -189,7 +190,10 @@ async def submit_data(
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(text_content)
 
-        main_text = text_content
+        main_text = main_text.strip()
+
+        if len(main_text) > 20000:
+            main_text = main_text[:20000]
 
         extra_info = {
             "type": "text",
@@ -294,7 +298,18 @@ Content:
 {combined_context}
 """
 
-    summary = ask_ai(summary_prompt)
+    try:
+        summary = summarize_long_text(main_text)
+    except ValueError as e:
+        return JSONResponse(
+        status_code=429,
+        content={"error": str(e)}
+    )
+    except Exception:
+        return JSONResponse(
+        status_code=500,
+        content={"error": "AI summary failed"}
+    )
 
     # -------------------------
     # 6) ส่งผลกลับ
@@ -429,4 +444,4 @@ def quiz_page():
     file_path = os.path.join(os.path.dirname(__file__), "quiz.html")
     return FileResponse(file_path)
 
-#letmeFix: 11:42
+#letmeFix: 12.36
