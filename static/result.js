@@ -88,3 +88,10 @@ window.location.href = "/quiz";
 backBtn.addEventListener("click", function () {
   window.location.href = "/";
 });
+
+const topBackBtn = document.getElementById("topBackBtn");
+if (topBackBtn) {
+  topBackBtn.addEventListener("click", function () {
+    window.location.href = "/";
+  });
+}
