@@ -2,7 +2,6 @@ import requests
 import os
 
 def ask_ai(prompt):
-
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
@@ -14,7 +13,11 @@ def ask_ai(prompt):
             "messages": [
                 {"role": "user", "content": prompt}
             ]
-        }
+        },
+        timeout=60
     )
 
-    return response.json()["choices"][0]["message"]["content"]
+    response.raise_for_status()
+    data = response.json()
+    return data["choices"][0]["message"]["content"]
+#letme fix 11:42

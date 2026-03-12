@@ -4,17 +4,14 @@ import os
 import shutil
 import uuid
 from fastapi.staticfiles import StaticFiles
-import pytesseract
-from PIL import Image
-from pypdf import PdfReader
-from pdf2image import convert_from_path
 import json 
 import re
 import requests
-
-
+from ocr_service import extract_text_from_image_file
 from ai import ask_ai
 from pydantic import BaseModel
+from pypdf import PdfReader
+
 
 class QuizRequest(BaseModel):
     summary: str
@@ -54,10 +51,19 @@ def chunk_text(text, size=1500):
     return chunks
 
 
-def extract_text_from_image(image_path):
-    img = Image.open(image_path)
-    text = pytesseract.image_to_string(img, lang="tha+eng")
-    return text
+def process_pdf(pdf_path):
+    extracted_text = extract_text_from_pdf(pdf_path)
+
+    if is_probably_text_pdf(extracted_text):
+        return {
+            "mode": "text",
+            "text": extracted_text
+        }
+    else:
+        return {
+            "mode": "unsupported_scanned_pdf",
+            "text": ""
+        }
 
 
 def extract_text_from_pdf(pdf_path):
@@ -72,32 +78,10 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 
-def extract_text_from_scanned_pdf(pdf_path):
-    pages = convert_from_path(pdf_path)
-    all_text = ""
-
-    for page in pages:
-        text = pytesseract.image_to_string(page, lang="tha+eng")
-        all_text += text + "\n"
-
-    return all_text
 
 
-def process_pdf(pdf_path):
-    extracted_text = extract_text_from_pdf(pdf_path)
 
-    if is_probably_text_pdf(extracted_text):
-        return {
-            "mode": "text",
-            "text": extracted_text
-        }
-    else:
-        ocr_text = extract_text_from_scanned_pdf(pdf_path)
-        return {
-            "mode": "ocr",
-            "text": ocr_text
-        }
-    
+
 def generate_key_search(raw_text: str):
     cleaned_text = raw_text.strip()
 
@@ -169,6 +153,17 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # =========================
 # Routes
 # =========================
+
+
+@app.post("/ocr")
+async def ocr(file: UploadFile = File(...)):
+    content = await file.read()
+    text = extract_text_from_image_file(content)
+    return {
+        "filename": file.filename,
+        "text": text
+    }
+
 @app.get("/result")
 def result_page():
     return FileResponse("result.html")
@@ -211,14 +206,18 @@ async def submit_data(
         with open(save_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        extracted_text = extract_text_from_image(save_path)
+        with open(save_path, "rb") as f:
+            extracted_text = extract_text_from_image_file(f.read())
+
+        
+
         main_text = extracted_text
 
         extra_info = {
             "type": "image",
             "filename": filename,
             "extracted_text": extracted_text
-        }
+    }
 
     elif data_type == "pdf":
         if file is None:
@@ -232,6 +231,8 @@ async def submit_data(
 
         result = process_pdf(save_path)
         pdf_text = result["text"]
+        if result["mode"] == "unsupported_scanned_pdf":
+            return {"error": "PDF แบบสแกนยังไม่รองรับในเวอร์ชันนี้"}
         main_text = pdf_text
 
         extra_info = {
@@ -427,3 +428,5 @@ format JSON:
 def quiz_page():
     file_path = os.path.join(os.path.dirname(__file__), "quiz.html")
     return FileResponse(file_path)
+
+#letmeFix: 11:42
