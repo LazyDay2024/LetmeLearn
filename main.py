@@ -190,15 +190,15 @@ async def submit_data(
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(text_content)
 
-        main_text = main_text.strip()
+        main_text = (text_content or "").strip()
 
         if len(main_text) > 20000:
-            main_text = main_text[:20000]
+         main_text = main_text[:20000]
 
         extra_info = {
             "type": "text",
             "saved_to": save_path
-        }
+    }
 
     elif data_type == "image":
         if file is None:
@@ -299,7 +299,7 @@ Content:
 """
 
     try:
-        summary = summarize_long_text(main_text)
+        summary = summarize_long_text(combined_context)
     except ValueError as e:
         return JSONResponse(
         status_code=429,
