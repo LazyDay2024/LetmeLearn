@@ -9,10 +9,24 @@ def summarize_long_text(text):
 
     for chunk in chunks:
         prompt = f"""
-กรุณาสรุปเนื้อหาต่อไปนี้เป็นภาษาไทยแบบเข้าใจง่าย
-เน้นประเด็นสำคัญ ไม่ต้องยาว
+You are an API that summarizes Wikipedia articles.
 
-เนื้อหา:
+Your task is to read the provided content and return a clear summary in Thai.
+
+Rules you must follow strictly:
+- Output must be plain text only.
+- Do NOT use Markdown.
+- Do NOT use bullet symbols like *, -, #.
+- Do NOT use tables.
+- Do NOT use HTML tags.
+- Do NOT use LaTeX or any math formatting.
+- Do NOT include code blocks or programming syntax.
+- Do NOT explain the rules.
+
+Write the summary as normal readable Thai paragraphs.
+
+Content to summarize:
+
 {chunk}
 """
 
@@ -22,8 +36,21 @@ def summarize_long_text(text):
     combined_summary = "\n".join(summaries)
 
     final_prompt = f"""
-ต่อไปนี้คือสรุปย่อยจากหลายส่วนของเอกสารเดียวกัน
-กรุณารวมให้เป็นสรุปสุดท้ายที่กระชับและอ่านง่าย
+You are an API that produces the final summary of a Wikipedia article.
+
+The text below contains multiple partial summaries of the same topic.
+Merge them into one clear and coherent Thai summary.
+
+Rules:
+- Return plain text only.
+- No Markdown.
+- No HTML.
+- No tables.
+- No LaTeX.
+- No code blocks.
+- Write in normal Thai paragraphs.
+
+Text:
 
 {combined_summary}
 """
