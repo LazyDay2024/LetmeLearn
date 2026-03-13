@@ -32,7 +32,7 @@ Content to summarize:
 
         result = ask_ai(prompt)
         summaries.append(result)
-        time.sleep(4)
+        time.sleep(10)
     combined_summary = "\n".join(summaries)
 
     final_prompt = f"""
