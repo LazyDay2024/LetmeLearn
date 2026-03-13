@@ -12,48 +12,52 @@
 </head>
 
 <body>
-  <div class="container">
-    <button class="theme-toggle" id="themeToggleBtn">🌙</button>
-    <h1>📚 LetMeLearn</h1>
-    <div class="subtitle">อัปโหลดเนื้อหา แล้วให้ระบบสรุปก่อนค่อยเลือกจำนวนข้อ Quiz</div>
+  <form id="uploadForm">
+  <div class="field">
+    <label for="data_type">เลือกประเภทข้อมูล</label>
+    <select id="data_type" name="data_type">
+      <option value="text">Text</option>
+      <option value="image">Image</option>
+      <option value="pdf">PDF</option>
+    </select>
+  </div>
 
-    <form id="uploadForm">
-      <div class="field">
-        <label for="data_type">เลือกประเภทข้อมูล</label>
-        <select id="data_type" name="data_type">
-          <option value="text">Text</option>
-          <option value="image">Image</option>
-          <option value="pdf">PDF</option>
-        </select>
-      </div>
+  <div class="field" id="textBox">
+    <label for="text_content">ใส่ข้อความ</label>
+    <textarea id="text_content" name="text_content" placeholder="พิมพ์เนื้อหาที่ต้องการสรุป..."></textarea>
+  </div>
 
-      <div class="field" id="textBox">
-        <label for="text_content">ใส่ข้อความ</label>
-        <textarea id="text_content" name="text_content" placeholder="พิมพ์เนื้อหาที่ต้องการสรุป..."></textarea>
-      </div>
+  <div class="field" id="fileBox" style="display: none;">
+    <label for="file">อัปโหลดไฟล์</label>
+    <input type="file" id="file" name="file" />
+  </div>
 
-      <div class="field" id="fileBox" style="display: none;">
-        <label for="file">อัปโหลดไฟล์</label>
-        <input type="file" id="file" name="file" />
-      </div>
+  <div class="advanced-toggle">
+    <label>
+      <input type="checkbox" id="advancedToggle">
+      Advanced options
+    </label>
+  </div>
 
-      <button class="submit-btn" id="submitBtn" type="submit">🚀 Upload & Summarize</button>
-    </form>
+  <div id="advancedOptions" style="display: none;">
+    <div class="form-group">
+      <label for="topicInput">หัวข้อที่อยากเรียน</label>
+      <input type="text" id="topicInput" placeholder="เช่น ระบบฮอร์โมน, กรด-เบส, แรงและการเคลื่อนที่">
+    </div>
 
-    <div class="progress-wrapper" id="progressWrapper">
-      <div class="progress-header">
-        <span>Processing...</span>
-        <span id="progressPercent">0%</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div class="status-text" id="statusText">กำลังเริ่มประมวลผล...</div>
+    <div class="form-group">
+      <label for="levelInput">ระดับผู้เรียน</label>
+      <input type="text" id="levelInput" placeholder="เช่น ม.4, ม.5, มหาวิทยาลัย">
+    </div>
+
+    <div class="form-group">
+      <label for="goalInput">สิ่งที่ยังไม่เข้าใจ / อยากให้เน้น</label>
+      <textarea id="goalInput" rows="4" placeholder="เช่น อยากให้เน้นการสรุปแบบเข้าใจง่าย และยกตัวอย่าง"></textarea>
     </div>
   </div>
 
-
-
+  <button class="submit-btn" id="submitBtn" type="submit">🚀 Upload & Summarize</button>
+</form>
   <script src="static/script.js"></script>
 </body>
 

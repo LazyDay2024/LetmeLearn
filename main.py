@@ -14,9 +14,13 @@ from pypdf import PdfReader
 from services.text_summarizer import summarize_long_text
 
 
+
 class QuizRequest(BaseModel):
     summary: str
     number_of_questions: int
+    topic: str = ""
+    level: str = ""
+    goal: str = ""
 
 # =========================
 # Config
@@ -178,6 +182,9 @@ def home():
 async def submit_data(
     data_type: str = Form(...),
     text_content: str = Form(""),
+    topic: str = Form(""),
+    level: str = Form(""),
+    goal: str = Form(""),
     file: UploadFile = File(None)
 ):
     # -------------------------
@@ -193,12 +200,12 @@ async def submit_data(
         main_text = (text_content or "").strip()
 
         if len(main_text) > 20000:
-         main_text = main_text[:20000]
+            main_text = main_text[:20000]
 
         extra_info = {
             "type": "text",
             "saved_to": save_path
-    }
+        }
 
     elif data_type == "image":
         if file is None:
@@ -213,15 +220,13 @@ async def submit_data(
         with open(save_path, "rb") as f:
             extracted_text = extract_text_from_image_file(f.read())
 
-        
-
         main_text = extracted_text
 
         extra_info = {
             "type": "image",
             "filename": filename,
             "extracted_text": extracted_text
-    }
+        }
 
     elif data_type == "pdf":
         if file is None:
@@ -235,8 +240,10 @@ async def submit_data(
 
         result = process_pdf(save_path)
         pdf_text = result["text"]
+
         if result["mode"] == "unsupported_scanned_pdf":
             return {"error": "PDF แบบสแกนยังไม่รองรับในเวอร์ชันนี้"}
+
         main_text = pdf_text
 
         extra_info = {
@@ -272,44 +279,47 @@ async def submit_data(
             print(f"Wikipedia error for '{keyword}': {e}")
 
     # -------------------------
-    # 4) รวมข้อความต้นฉบับ + ข้อมูลจาก Wikipedia
+    # 4) รวมข้อความ + config จากหน้าแรก
     # -------------------------
+    study_config = []
+
+    if topic.strip():
+        study_config.append(f"หัวข้อที่อยากเรียน: {topic.strip()}")
+
+    if level.strip():
+        study_config.append(f"ระดับผู้เรียน: {level.strip()}")
+
+    if goal.strip():
+        study_config.append(f"สิ่งที่ยังไม่เข้าใจ / อยากให้เน้น: {goal.strip()}")
+
     combined_context = main_text
 
     if wiki_contents:
         combined_context += "\n\nข้อมูลเพิ่มเติมจาก Wikipedia:\n\n" + "\n\n".join(wiki_contents)
 
+    if study_config:
+        combined_context = (
+            "ข้อมูลสำหรับปรับการสรุป:\n"
+            + "\n".join(study_config)
+            + "\n\nเนื้อหาสำหรับสรุป:\n"
+            + combined_context
+        )
+
     # -------------------------
-    # 5) ให้ AI สรุป final summary
+    # 5) สรุปเนื้อหา
     # -------------------------
-    summary_prompt = f"""
-You are a study assistant.
-
-Create a clear and useful study summary for students.
-
-Rules:
-- Write in Thai
-- Make it easy to understand
-- Focus on important concepts
-- Use both the uploaded content and Wikipedia information if available
-- Do not make up facts
-
-Content:
-{combined_context}
-"""
-
     try:
         summary = summarize_long_text(combined_context)
     except ValueError as e:
         return JSONResponse(
-        status_code=429,
-        content={"error": str(e)}
-    )
-    except Exception:
+            status_code=429,
+            content={"error": str(e)}
+        )
+    except Exception as e:
         return JSONResponse(
-        status_code=500,
-        content={"error": "AI summary failed"}
-    )
+            status_code=500,
+            content={"error": "AI summary failed", "details": str(e)}
+        )
 
     # -------------------------
     # 6) ส่งผลกลับ
@@ -318,8 +328,13 @@ Content:
         **extra_info,
         "key_search": key_search,
         "wiki_count": len(wiki_contents),
-        "summary": summary
+        "summary": summary,
+        "topic": topic,
+        "level": level,
+        "goal": goal
     }
+
+    
 
 
     
@@ -375,31 +390,52 @@ def extract_json_from_text(text: str):
 async def generate_quiz(data: QuizRequest):
     summary = data.summary
     number_of_questions = data.number_of_questions
+    topic = data.topic
+    level = data.level
+    goal = data.goal
+
+    extra_context = []
+
+    if topic.strip():
+        extra_context.append(f"หัวข้อที่อยากเรียน: {topic.strip()}")
+
+    if level.strip():
+        extra_context.append(f"ระดับผู้เรียน: {level.strip()}")
+
+    if goal.strip():
+        extra_context.append(f"สิ่งที่ยังไม่เข้าใจ / อยากให้เน้น: {goal.strip()}")
+
+    extra_context_text = ""
+    if extra_context:
+        extra_context_text = "\n".join(extra_context) + "\n\n"
 
     prompt = f"""
-You are an Ai assistant that creates multiple choice questions for students based on the provided summary.
+You are an AI assistant that creates multiple choice questions for students based on the provided summary.
 
-generate questions with multiple choice and answer {number_of_questions} questions
+Generate {number_of_questions} multiple choice questions.
 
-rules for question generation:
+Rules for question generation:
 - Reply only with JSON in the specified format
 - Do not include any explanations or text outside of the JSON structure
 - Reply in Thai language only
 - Each question has 4 answer choices
 - Only one correct answer per question
+- Adjust difficulty to match the learner level if provided
+- Focus on the requested topic and goal if provided
 
-format JSON:
+Format JSON:
 {{
   "questions": [
     {{
       "question": "question 1",
       "choices": ["choice1", "choice2", "choice3", "choice4"],
-      "answer": " correct choice"
+      "answer": "correct choice"
     }}
   ]
 }}
 
-สรุปเนื้อหา:
+ข้อมูลเพิ่มเติม:
+{extra_context_text}สรุปเนื้อหา:
 {summary}
 """
 
@@ -417,23 +453,14 @@ format JSON:
         print("=================================================\n")
 
         return {
-            "questions": quiz_json.get("questions", []),
-            "debug_raw_ai": ai_response,
-            "debug_extracted_json": quiz_json
+            "questions": quiz_json.get("questions", [])
         }
 
     except Exception as e:
-        print("\n================ JSON ERROR =================")
-        print("Error:", str(e))
-        print("Raw AI response:")
-        print(ai_response)
-        print("=============================================\n")
-
-        return {
-            "error": "ไม่สามารถสกัด JSON จากข้อความของ AI ได้",
-            "details": str(e),
-            "raw_text": ai_response
-        }
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Quiz JSON parse failed", "details": str(e)}
+        )
 
 
 

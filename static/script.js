@@ -14,6 +14,19 @@ let fakeProgress = 0;
 let progressTimer = null;
 let isFinished = false;
 
+
+
+const advancedToggle = document.getElementById("advancedToggle");
+const advancedOptions = document.getElementById("advancedOptions");
+
+
+
+if (advancedToggle && advancedOptions) {
+  advancedToggle.addEventListener("change", function () {
+    advancedOptions.style.display = advancedToggle.checked ? "block" : "none";
+  });
+}
+
 dataType.addEventListener("change", function () {
   const selected = dataType.value;
 
@@ -135,6 +148,26 @@ uploadForm.addEventListener("submit", function (e) {
       }
     }
   };
+
+const topic = document.getElementById("topicInput")?.value.trim() || "";
+const level = document.getElementById("levelInput")?.value.trim() || "";
+const goal = document.getElementById("goalInput")?.value.trim() || "";
+
+formData.append("topic", topic);
+formData.append("level", level);
+formData.append("goal", goal);
+
+
+localStorage.removeItem("promptTopic");
+localStorage.removeItem("promptLevel");
+localStorage.removeItem("promptGoal");
+
+localStorage.setItem("promptTopic", topic);
+localStorage.setItem("promptLevel", level);
+localStorage.setItem("promptGoal", goal);
+
+
+
 
   xhr.send(formData);
 });

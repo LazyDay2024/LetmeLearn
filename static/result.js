@@ -6,6 +6,7 @@ const loadingOverlay = document.getElementById("loadingOverlay");
 const decreaseBtn = document.getElementById("decreaseBtn");
 const increaseBtn = document.getElementById("increaseBtn");
 
+
 if (decreaseBtn && increaseBtn && quizCountInput) {
   decreaseBtn.addEventListener("click", () => {
     let val = parseInt(quizCountInput.value) || 1;
@@ -32,15 +33,9 @@ if (summary && summary.trim() !== "" && summary !== "ไม่พบข้อม
 
 generateBtn.addEventListener("click", async function () {
   const quizCount = parseInt(quizCountInput.value, 10);
-  const promptRole = document.getElementById("promptRole") ? document.getElementById("promptRole").value.trim() : "";
-  const promptTopic = document.getElementById("promptTopic") ? document.getElementById("promptTopic").value.trim() : "";
-  const promptLevel = document.getElementById("promptLevel") ? document.getElementById("promptLevel").value.trim() : "";
-  const promptGoal = document.getElementById("promptGoal") ? document.getElementById("promptGoal").value.trim() : "";
-
-  // if (!summary) {
-  //   alert("ไม่พบ summary");
-  //   return;
-  // }
+  const promptTopic = localStorage.getItem("promptTopic") || "";
+  const promptLevel = localStorage.getItem("promptLevel") || "";
+  const promptGoal = localStorage.getItem("promptGoal") || "";
 
   if (!quizCount || quizCount < 1) {
     alert("กรุณาใส่จำนวนข้อให้ถูกต้อง");
@@ -58,22 +53,20 @@ generateBtn.addEventListener("click", async function () {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        summary: summary,
-        number_of_questions: quizCount,
-        role: promptRole,
-        topic: promptTopic,
-        level: promptLevel,
-        goal: promptGoal
-      })
+  summary: summary,
+  number_of_questions: quizCount,
+  topic: promptTopic,
+  level: promptLevel,
+  goal: promptGoal
+})
     });
 
     const result = await response.json();
 
     console.log("quiz json:", result);
 
-    // เก็บไว้ใช้หน้าถัดไป
     localStorage.setItem("quizData", JSON.stringify(result));
-window.location.href = "/quiz";
+    window.location.href = "/quiz";
 
   } catch (error) {
     console.error(error);
@@ -93,5 +86,12 @@ const topBackBtn = document.getElementById("topBackBtn");
 if (topBackBtn) {
   topBackBtn.addEventListener("click", function () {
     window.location.href = "/";
+  });
+}
+
+
+if (advancedToggle && advancedOptions) {
+  advancedToggle.addEventListener("change", () => {
+    advancedOptions.style.display = advancedToggle.checked ? "block" : "none";
   });
 }
